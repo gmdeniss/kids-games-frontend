@@ -29,7 +29,17 @@ const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
 const rnd   = (a,b) => Math.floor(a + Math.random()*(b-a+1));
 
 // Таймер/очки
-function updateTimer(ms){ timeEl.textContent = 'Time: ' + (ms/1000).toFixed(1) + 's'; }
+function updateTimer(ms){
+  const left = Math.max(0, ROUND_MS - ms);
+  timeEl.textContent = 'Time: ' + (left/1000).toFixed(1) + 's';
+
+  // 🔥 Анимация последних секунд
+  if (left <= 5000) {
+    timeEl.classList.add('danger');
+  } else {
+    timeEl.classList.remove('danger');
+  }
+}
 function updateScore(){ scoreEl.textContent = 'Score: ' + state.score; }
 
 // Случайная позиция жука внутри поля
@@ -65,10 +75,11 @@ function startGame(){
   statusEl.textContent = '';
   leaderboard.innerHTML = '';
 
-  state.running = true;
-  state.score = 0;
-  updateScore();
-  state.start = Date.now();
+state.running = true;
+state.score = 0;
+updateScore();
+updateTimer(0);         // 🔥 Показать "20.0s" сразу
+state.start = Date.now();
 
   placeBugRandom();
   hopLoop();
