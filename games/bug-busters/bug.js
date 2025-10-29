@@ -109,7 +109,7 @@ async function refreshLeaderboard(){
     leaderboard.innerHTML = data
       .sort((a,b)=>b.score - a.score)
       .slice(0,10)
-      .map((x,i)=>`<li>${i+1}. <b>${escapeHtml(x.name)}</b> — ${x.score}</li>`)
+      .map(x => `<li><b>${escapeHtml(x.name)}</b> — ${x.score}</li>`)
       .join('');
   }catch(e){
     leaderboard.innerHTML = '<li>Scores unavailable (server sleeping or offline).</li>';
