@@ -1,151 +1,156 @@
-// === games/bug-busters/bug.js ===
+// === Конфиг ===
+const API_BASE = 'https://kids-games-backend.onrender.com'; // HTTPS для GitHub Pages
 
-// Бэкенд (Render) для лидерборда
-const API_BASE = 'https://kids-games-backend.onrender.com';
-
-// Параметры игры
-const ROUND_MS     = 15000;   // длительность раунда
-const HOP_EVERY_MS = 800;     // как часто баг сам прыгает
-const BUG_SIZE     = 56;      // диаметр «жука» в пикселях
-
-// DOM
-const playfield   = document.querySelector('.playfield, .board');
+// === DOM ===
+const playfield   = document.getElementById('playfield');
 const bug         = document.getElementById('bug');
 const timeEl      = document.querySelector('[data-time]');
 const scoreEl     = document.querySelector('[data-score]');
-const panel       = document.getElementById('postGame');
+
+const postGame    = document.getElementById('postGame');
+const finalScore  = document.getElementById('finalScore');
+const form        = document.getElementById('scoreForm');
 const nameInput   = document.getElementById('playerName');
-const submitBtn   = document.getElementById('submitScore');
+const submitBtn   = document.getElementById('submitBtn');
 const statusEl    = document.getElementById('scoreStatus');
 const leaderboard = document.getElementById('leaderboard');
 const restartBtn  = document.getElementById('restartBtn');
 
-// Состояние
-const state = {
-  running: false,
-  start: 0,
-  score: 0,
-  rafId: 0,
-  hopId: 0,
-};
+// === Параметры игры (как в «стабильной» версии) ===
+const ROUND_MS   = 20000;       // длительность раунда — 20с
+const HOP_MIN    = 500;         // интервал прыжка
+const HOP_MAX    = 800;
+const BUG_SIZE   = 56;          // диаметр жука (должен совпадать со стилем)
+
+const state = { running:false, start:0, tickId:0, hopId:0, score:0 };
 
 // Утилиты
-function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+const rnd   = (a,b) => Math.floor(a + Math.random()*(b-a+1));
 
-function randomPos() {
-  if (!playfield || !bug) return;
-  const r = playfield.getBoundingClientRect();
-  const maxX = Math.max(0, r.width  - BUG_SIZE - 8); // минус рамки
-  const maxY = Math.max(0, r.height - BUG_SIZE - 8);
-  const x = Math.floor(Math.random() * maxX);
-  const y = Math.floor(Math.random() * maxY);
-  bug.style.left = `${x}px`;
-  bug.style.top  = `${y}px`;
+// Таймер/очки
+function updateTimer(ms){ timeEl.textContent = 'Time: ' + (ms/1000).toFixed(1) + 's'; }
+function updateScore(){ scoreEl.textContent = 'Score: ' + state.score; }
+
+// Случайная позиция жука внутри поля
+function placeBugRandom(){
+  const rect = playfield.getBoundingClientRect();
+  const maxX = rect.width  - BUG_SIZE - 4; // минус рамка
+  const maxY = rect.height - BUG_SIZE - 4;
+  const x = rnd(0, clamp(maxX, 0, 99999));
+  const y = rnd(0, clamp(maxY, 0, 99999));
+  bug.style.left = x + 'px';
+  bug.style.top  = y + 'px';
 }
 
-// Таймер раунда
-function startTimer() {
-  const tick = () => {
+// Жук сам прыгает каждые 500–800 мс
+function hopLoop(){
+  const dt = rnd(HOP_MIN, HOP_MAX);
+  state.hopId = setTimeout(()=>{
     if (!state.running) return;
-    const ms = Date.now() - state.start;
-    if (timeEl) timeEl.textContent = `Time: ${(ms / 1000).toFixed(1)}s`;
-    if (ms >= ROUND_MS) { endGame(); return; }
-    state.rafId = requestAnimationFrame(tick);
-  };
-  state.rafId = requestAnimationFrame(tick);
+    placeBugRandom();
+    hopLoop();
+  }, dt);
 }
 
-// Самопрыжки
-function startHopping() {
-  clearInterval(state.hopId);
-  randomPos(); // первый прыжок сразу
-  state.hopId = setInterval(() => {
-    if (!state.running) return;
-    randomPos();
-  }, HOP_EVERY_MS);
+function tick(){
+  const ms = Date.now() - state.start;
+  updateTimer(ms);
+  if (ms >= ROUND_MS) { endGame(); return; }
+  state.tickId = requestAnimationFrame(tick);
 }
 
-function stopHopping() {
-  clearInterval(state.hopId);
-  state.hopId = 0;
-}
-
-function updateScore() {
-  if (scoreEl) scoreEl.textContent = `Score: ${state.score}`;
-}
-
-// Игровые события
-function startGame() {
-  if (panel) panel.hidden = true;
-  if (statusEl) statusEl.textContent = '';
-  if (leaderboard) leaderboard.innerHTML = '';
+function startGame(){
+  postGame.hidden = true;
+  statusEl.textContent = '';
+  leaderboard.innerHTML = '';
 
   state.running = true;
-  state.score   = 0;
-  state.start   = Date.now();
-
-  if (bug) bug.disabled = false;
-
+  state.score = 0;
   updateScore();
-  randomPos();
-  startHopping();
-  startTimer();
+  state.start = Date.now();
+
+  placeBugRandom();
+  hopLoop();
+  tick();
+
+  nameInput.value = localStorage.getItem('kg_name') || '';
 }
 
-async function endGame() {
+function endGame(){
   state.running = false;
-  cancelAnimationFrame(state.rafId);
-  stopHopping();
-  if (bug) bug.disabled = true;
-  if (timeEl) timeEl.textContent = 'Time: 0.0s';
-  if (panel) panel.hidden = false;
-  await refreshLeaderboard();
+  cancelAnimationFrame(state.tickId);
+  clearTimeout(state.hopId);
+
+  finalScore.textContent = state.score;
+  postGame.hidden = false;
+  nameInput.focus();
+
+  refreshLeaderboard().catch(()=>{});
 }
 
-// Клик по жуку — очки + перепрыгнуть сразу
-bug?.addEventListener('click', () => {
+// Клик по жуку — +1 очко и немедленный прыжок
+bug.addEventListener('click', () => {
   if (!state.running) return;
   state.score += 1;
   updateScore();
-  randomPos();
+  placeBugRandom();
 });
 
-// Перезапуск
-restartBtn?.addEventListener('click', startGame);
+// Рестарт
+restartBtn.addEventListener('click', startGame);
 
-// Сохранение и лидерборд
-submitBtn?.addEventListener('click', async () => {
-  const name = (nameInput?.value || '').trim().slice(0, 12) || 'Anon';
-  try {
-    const res = await fetch(`${API_BASE}/scores`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, score: state.score }),
+// === Работа с бэкендом ===
+async function refreshLeaderboard(){
+  try{
+    const r = await fetch(API_BASE + '/scores', { cache:'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    leaderboard.innerHTML = data
+      .sort((a,b)=>b.score - a.score)
+      .slice(0,10)
+      .map((x,i)=>`<li>${i+1}. <b>${escapeHtml(x.name)}</b> — ${x.score}</li>`)
+      .join('');
+  }catch(e){
+    leaderboard.innerHTML = '<li>Scores unavailable (server sleeping or offline).</li>';
+  }
+}
+
+form.addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const name = (nameInput.value || '').trim().slice(0,12);
+  if (!name) { statusEl.textContent = 'Enter your name.'; return; }
+
+  localStorage.setItem('kg_name', name);
+
+  submitBtn.disabled = true;
+  statusEl.textContent = 'Submitting…';
+
+  try{
+    const r = await fetch(API_BASE + '/scores', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ name, score: state.score })
     });
-    if (statusEl) statusEl.textContent = res.ok ? 'Saved ✅' : 'Error saving 😕';
-    await refreshLeaderboard();
-  } catch {
-    if (statusEl) statusEl.textContent = 'Network error 😕';
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const js = await r.json();
+    if (js && js.ok){
+      statusEl.textContent = 'Leaderboard updated.';
+      await refreshLeaderboard();
+    } else {
+      statusEl.textContent = 'Server declined the score.';
+    }
+  }catch(e){
+    statusEl.textContent = 'Can’t submit (server sleeping?). Try again in 10–20s.';
+  }finally{
+    submitBtn.disabled = false;
   }
 });
 
-async function refreshLeaderboard() {
-  if (!leaderboard) return;
-  try {
-    const res = await fetch(`${API_BASE}/scores`);
-    if (!res.ok) return;
-    const list = await res.json();
-    leaderboard.innerHTML = '';
-    list
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10)
-      .forEach((row, i) => {
-        const li = document.createElement('li');
-        li.textContent = `${i + 1}. ${row.name} — ${row.score}`;
-        leaderboard.appendChild(li);
-      });
-  } catch {}
-}
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 // Автостарт
-window.addEventListener('DOMContentLoaded', startGame);
+(async function init(){
+  await refreshLeaderboard();   // «разбудит» Render, если спит
+  startGame();
+})();
