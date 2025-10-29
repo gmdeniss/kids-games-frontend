@@ -31,7 +31,7 @@ const sounds = {
 sounds.bg.loop = true;
 // тюнинг клика (можешь поэкспериментировать)
 sounds.click.volume = 0.75;      // 0.0–1.0
-sounds.click.playbackRate = 1.25; // 0.5–4.0
+sounds.click.playbackRate = 2; // 0.5–4.0
 
 let soundEnabled = false;
 
