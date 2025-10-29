@@ -61,7 +61,7 @@ body{
 }
 
 /* Мелкие утилиты */
-.pill{ background: var(--card); border: 1px solid var(--ink); border-radius: 999px; padding: .35rem .75rem; }
+.pill{ display: inline-block; background: var(--card); border: 1px solid var(--ink); border-radius: 999px; padding: .35rem .75rem; will-change: transform; }
  button.btn { display:inline-block; padding:.6rem .9rem; background:#111; color:#fff; border:none; border-radius:8px; cursor:pointer; }
 .btn:disabled{ opacity:.5; cursor: default; }
 
