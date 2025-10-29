@@ -31,3 +31,41 @@ body{
 .badge{ padding:4px 8px; border-radius:999px; background:#000; color:#fff; font-size:12px; }
 .pills{ display:flex; gap:8px; align-items:center; }
 .footer{ color:var(--muted); font-size:12px; margin-top:24px; }
+
+/* === Games: shared styles === */
+.playfield, .board{
+  position: relative;
+  width: min(680px, 92vw);
+  height: min(420px, 60vh);
+  margin: 16px auto;                 /* центрируем поле */
+  border: 2px dashed var(--ink);
+  background: repeating-linear-gradient(135deg, #0000 0 12px, #0001 12px 24px);
+}
+
+/* Кнопка-жук: фиксируем размер и отключаем плавности,
+   чтобы не было «двойного» прыжка из-за CSS-анимаций */
+.bug{
+  position: absolute; left: 0; top: 0;   /* координаты задаёт JS */
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #ffb3b3; box-shadow: 0 2px 8px #0003;
+  font-size: 24px; line-height: 1; cursor: pointer; user-select: none;
+  transition: none !important;           /* критично */
+}
+.bug span{ transform: translateY(-1px); } /* лёгкое вертикальное выравнивание */
+
+/* Панель результатов / формы — аккуратно по центру под полем */
+.panel, #postGame{
+  max-width: min(680px, 92vw);
+  margin: 16px auto;
+}
+
+/* Мелкие утилиты */
+.pill{ background: var(--card); border: 1px solid var(--ink); border-radius: 999px; padding: .35rem .75rem; }
+ button.btn { display:inline-block; padding:.6rem .9rem; background:#111; color:#fff; border:none; border-radius:8px; cursor:pointer; }
+.btn:disabled{ opacity:.5; cursor: default; }
+
+/* Чуть больше кликабельность на мобильных */
+@media (max-width: 480px){
+  .bug{ width: 60px; height: 60px; font-size: 26px; }
+}
