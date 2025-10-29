@@ -33,7 +33,7 @@ function updateTimer(ms){
   const left = Math.max(0, ROUND_MS - ms);
   timeEl.textContent = 'Time: ' + (left/1000).toFixed(1) + 's';
 
-  // 🔥 Анимация последних секунд
+  // 🔥 последние 5 секунд — красный и пульс
   if (left <= 5000) {
     timeEl.classList.add('danger');
   } else {
