@@ -112,14 +112,9 @@ async function refreshLeaderboard(){
     const top = data.sort((a,b)=>b.score - a.score).slice(0,10);
 
     // Очищаем список перед обновлением
-    leaderboard.innerHTML = '';
-
-    // Добавляем красивыми <li>
-    top.forEach((row, i) => {
-      const li = document.createElement('li');
-      li.textContent = `${i+1}. ${row.name} — ${row.score}`;
-      leaderboard.appendChild(li);
-    });
+    leaderboard.innerHTML = top
+  .map(row => `<li><b>${escapeHtml(row.name)}</b> — ${row.score}</li>`)
+  .join('');
 
   }catch(e){
     leaderboard.innerHTML =
