@@ -41,7 +41,7 @@ const rnd = (a,b)=>Math.floor(a+Math.random()*(b-a+1));
 function updateTimer(ms){
   const left = Math.max(0, (ROUND_MS - ms)/1000);
   timeEl.textContent = 'Time: ' + left.toFixed(1) + 's';
-  if (left <= 10000) timeEl.classList.add('danger'); else timeEl.classList.remove('danger');
+  if (left <= 5) timeEl.classList.add('danger'); else timeEl.classList.remove('danger');
 }
 function updateScore(){ scoreEl.textContent = 'Score: ' + state.score; }
 
