@@ -47,17 +47,11 @@
       <span id="score" class="pill">Score: 0</span>
     </div>
 
-    <main class="board" id="board" aria-label="playfield">
-      <!-- Жук отрисуем через SVG, чтобы не было внешних ресурсов -->
-      <div id="bug" class="bug" aria-label="bug" role="button" style="left:calc(50% - 28px);top:calc(50% - 28px); background:#ff7a7a;">
-        <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10" fill="#ff6b6b"/>
-          <circle cx="12" cy="12" r="6" fill="#de5353"/>
-          <circle cx="10" cy="10" r="1.5" fill="#00000099"/>
-          <circle cx="14" cy="10" r="1.5" fill="#00000099"/>
-        </svg>
-      </div>
-    </main>
+ <main class="board playfield" id="playfield" aria-label="playfield">
+  <button id="bug" class="bug" aria-label="Bug — click to score">
+    <span>🐞</span>
+  </button>
+ </main>
 
     <p>Tap the bug fast! 🐞⚡</p>
 
