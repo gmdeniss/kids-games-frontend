@@ -86,9 +86,9 @@ function updateScore(){
 
 // Игровые события
 function startGame(){
-  panel.hidden = true;
-  statusEl.textContent = '';
-  leaderboard.innerHTML = '';
+if (panel) panel.hidden = true;
+if (statusEl) statusEl.textContent = '';
+if (leaderboard) leaderboard.innerHTML = '';
   state.running = true;
   state.score   = 0;
   state.start   = Date.now();
@@ -105,7 +105,7 @@ async function endGame(){
   stopHopping();
   bug.disabled = true;
   timeEl.textContent = 'Time: 0.0s';
-  panel.hidden = false;
+  if (panel) panel.hidden = false;
 
   // Подтянем топ с бэка (чтобы сразу показать актуальный список)
   await refreshLeaderboard();
