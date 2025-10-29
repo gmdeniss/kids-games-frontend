@@ -5,28 +5,16 @@
 <title>Bug Busters 🐞</title>
 <link rel="stylesheet" href="../../assets/styles.css" />
 <style>
-  .hud { display:flex; justify-content:space-between; gap:16px; margin:8px 0 12px; }
-  .playfield {
-    position: relative;
-    width: min(640px, 90vw);
-    height: min(420px, 63vw);
-    margin: 0 auto;
-    border: 2px dashed #333;
-    background:
-      repeating-linear-gradient(135deg,#0000 0 10px,#0001 10px 20px);
-  }
-  #bug{
-    position:absolute; inset:auto auto 50% 50%;
-    transform: translate(-50%,-50%);
-    width:56px; height:56px; border-radius:50%;
-    display:grid; place-items:center;
-    font-size:28px; line-height:1;
-    background:#ff6b6b; color:#111; border:2px solid #b33;
-    cursor:pointer; box-shadow:0 4px 0 #b33; user-select:none;
-  }
-  #bug:active{ transform: translate(-50%,-50%) translateY(2px); box-shadow:0 2px 0 #b33; }
-  .hint{ max-width:640px; margin:12px auto; color:var(--muted); font-size:14px; }
-  .back { display:inline-block; margin:12px 0; }
+  .hud{display:flex;justify-content:space-between;gap:16px;margin:8px 0 12px}
+  .playfield{position:relative;width:min(640px,90vw);height:min(420px,63vw);margin:0 auto;border:2px dashed #333;background:repeating-linear-gradient(135deg,#0000 0 10px,#0001 10px 20px)}
+  #bug{position:absolute;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:#ff6b6b;color:#111;border:2px solid #b33;cursor:pointer;box-shadow:0 4px 0 #b33;user-select:none}
+  #bug:active{transform:translate(-50%,-50%) translateY(2px);box-shadow:0 2px 0 #b33}
+  .hint{max-width:640px;margin:12px auto;color:var(--muted);font-size:14px}
+  .panel{max-width:640px;margin:12px auto;padding:12px;border:2px solid var(--ink);border-radius:8px;background:var(--card)}
+  .row{display:flex;gap:8px;align-items:center;margin:8px 0}
+  input[type="text"]{flex:1;padding:.6rem;border:2px solid var(--ink);border-radius:6px}
+  .muted{color:var(--muted);font-size:13px}
+  ul{margin:.25rem 0 0 1rem}
 </style>
 
 <body>
@@ -40,84 +28,127 @@
     </div>
 
     <div id="playfield" class="playfield" aria-label="Play area"></div>
-
     <p class="hint">Tap the bug fast! 🐞⚡</p>
+
+    <!-- Панель после окончания -->
+    <div id="postGame" class="panel" style="display:none">
+      <div class="row"><strong>Time!</strong> Final score: <span id="finalScore">0</span></div>
+      <form id="scoreForm" class="row">
+        <label for="playerName" class="muted" style="min-width:70px">Name</label>
+        <input id="playerName" type="text" maxlength="12" placeholder="Guest" autocomplete="name" />
+        <button class="btn primary" type="submit">Submit Score</button>
+      </form>
+      <div id="scoreStatus" class="muted">Scores are saved on the server.</div>
+      <div style="margin-top:8px">
+        <strong>Leaderboard</strong>
+        <ul id="leaderboard"></ul>
+      </div>
+      <div class="row"><button id="restartBtn" class="btn">Restart</button></div>
+    </div>
   </div>
 
 <script>
-  // 👉 Укажи бэкенд (Render)
-  const API_BASE = 'https://kids-games-backend.onrender.com';
+const API_BASE = 'https://kids-games-backend.onrender.com';
 
-  // DOM
-  const field = document.getElementById('playfield');
-  const timeEl = document.getElementById('time');
-  const scoreEl = document.getElementById('score');
+// DOM
+const field = document.getElementById('playfield');
+const timeEl = document.getElementById('time');
+const scoreEl = document.getElementById('score');
+const postGame = document.getElementById('postGame');
+const finalScoreEl = document.getElementById('finalScore');
+const form = document.getElementById('scoreForm');
+const nameInput = document.getElementById('playerName');
+const statusEl = document.getElementById('scoreStatus');
+const boardEl = document.getElementById('leaderboard');
+const restartBtn = document.getElementById('restartBtn');
 
-  // Состояние
-  let score = 0;
-  let endAt = Date.now() + 15000; // 15s
-  let tickId = 0;
+// State
+let score = 0;
+let endAt = Date.now() + 15000;
+let tickId = 0;
 
-  // Создаём кнопку-жука гарантированно
-  const bug = document.createElement('button');
-  bug.id = 'bug';
-  bug.type = 'button';
-  bug.setAttribute('aria-label','Bug');
-  bug.textContent = '🐞';
-  field.appendChild(bug);
+// Create bug
+const bug = document.createElement('button');
+bug.id = 'bug'; bug.type = 'button'; bug.setAttribute('aria-label','Bug'); bug.textContent = '🐞';
+field.appendChild(bug);
 
-  // Убедимся, что у поля есть размеры для расчётов
-  function bounds(){
-    const r = field.getBoundingClientRect();
-    return { w: r.width, h: r.height };
+function bounds(){ const r = field.getBoundingClientRect(); return {w:r.width, h:r.height}; }
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+function moveBug(){
+  const { w, h } = bounds();
+  const pad = 8 + 56;
+  const x = Math.random()*(w - pad*2) + pad;
+  const y = Math.random()*(h - pad*2) + pad;
+  bug.style.left = x + 'px';
+  bug.style.top  = y + 'px';
+}
+
+function updateTimer(){
+  const ms = clamp(endAt - Date.now(), 0, 15000);
+  timeEl.textContent = (ms/1000).toFixed(1) + 's';
+  if (ms <= 0){ gameOver(); return; }
+  tickId = requestAnimationFrame(updateTimer);
+}
+
+function setStatus(msg){ statusEl.textContent = msg; }
+
+async function refreshBoard(){
+  boardEl.innerHTML = '…';
+  try{
+    const res = await fetch(API_BASE + '/scores', {cache:'no-store'});
+    const arr = await res.json();
+    // сортируем по убыванию
+    arr.sort((a,b)=> (b.score??0) - (a.score??0));
+    const top = arr.slice(0,10);
+    boardEl.innerHTML = top.length ? '' : '<li class="muted">No scores yet.</li>';
+    top.forEach((s,i)=>{
+      const li = document.createElement('li');
+      const nm = (s.name || 'Guest').toString().slice(0,12);
+      li.textContent = `${i+1}. ${nm} — ${s.score}`;
+      boardEl.appendChild(li);
+    });
+  }catch(_){
+    boardEl.innerHTML = '<li class="muted">Cannot load scores.</li>';
   }
+}
 
-  function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
-  function moveBug() {
-    const { w, h } = bounds();
-    const pad = 8 + 56; // чуть больше радиуса
-    const x = Math.random() * (w - pad*2) + pad;
-    const y = Math.random() * (h - pad*2) + pad;
-    bug.style.left = x + 'px';
-    bug.style.top  = y + 'px';
+async function submitScore(){
+  const name = (nameInput.value || 'Guest').trim().slice(0,12);
+  try{
+    setStatus('Saving…');
+    const res = await fetch(API_BASE + '/scores', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, score })
+    });
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    setStatus('Saved! ✅');
+    await refreshBoard();
+  }catch(e){
+    setStatus('Failed to save score. Try again later.');
   }
+}
 
-  function updateTimer(){
-    const ms = clamp(endAt - Date.now(), 0, 15000);
-    timeEl.textContent = (ms/1000).toFixed(1) + 's';
-    if (ms <= 0){
-      gameOver();
-      return;
-    }
-    tickId = requestAnimationFrame(updateTimer);
-  }
+function gameOver(){
+  cancelAnimationFrame(tickId);
+  bug.disabled = true;
+  finalScoreEl.textContent = score;
+  postGame.style.display = 'block';
+  nameInput.focus();
+  refreshBoard();
+}
 
-  function gameOver(){
-    cancelAnimationFrame(tickId);
-    bug.disabled = true;
-    // необязательно отправлять на Pages, но бэкенд есть — можем слать:
-    try {
-      fetch(API_BASE + '/scores', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ name:'Guest', score })
-      }).catch(()=>{});
-    } catch(_){}
-  }
+bug.addEventListener('click', ()=>{
+  score++; scoreEl.textContent = score; moveBug();
+});
 
-  bug.addEventListener('click', () => {
-    score++;
-    scoreEl.textContent = score;
-    moveBug();
-  });
+form.addEventListener('submit', (e)=>{ e.preventDefault(); submitScore(); });
+restartBtn.addEventListener('click', ()=>{ location.reload(); });
 
-  // Старт
-  moveBug();
-  updateTimer();
-
-  // Пересчёт позиции при ресайзе, чтобы не улетал за границы
-  addEventListener('resize', () => moveBug(), { passive: true });
+moveBug();
+updateTimer();
+addEventListener('resize', ()=> moveBug(), {passive:true});
 </script>
 </body>
 </html>
