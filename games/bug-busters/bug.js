@@ -27,9 +27,9 @@ const BUG_SIZE = 56;          // диаметр жука (должен совп�
 const SFX = {
   enabled: false,
   primed:  false,   // подготовлены ли медиа под ограничения мобильных браузеров
-  click:   new Audio('../../assets/sfx/click.mp3'),
-  bg:      new Audio('../../assets/sfx/bg-20s.mp3'),
-  last5:   new Audio('../../assets/sfx/last5.mp3'),
+click:   new Audio('/kids-games-frontend/assets/sfx/click.mp3'),
+bg:      new Audio('/kids-games-frontend/assets/sfx/bg-20s.mp3'),
+last5:   new Audio('/kids-games-frontend/assets/sfx/last5.mp3'),
 };
 
 // базовые настройки громкости/поведения
