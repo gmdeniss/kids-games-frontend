@@ -8,27 +8,59 @@
   <!-- Общие стили проекта -->
   <link rel="stylesheet" href="../../assets/styles.css">
 
-  <!-- Небольшие локальные стили именно для этой игры -->
+  <!-- Локальные стили для этой игры -->
   <style>
-    .container{max-width:960px;margin:40px auto;padding:0 16px;}
-    .hud{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 12px;}
-    .board,.playfield{
-      position:relative;
-      width:min(680px,92vw);
-      height:min(420px,60vh);
-      margin:16px auto;
-      border:2px dashed var(--ink);
-      background:repeating-linear-gradient(135deg,#0000 0 12px,#0001 12px 24px);
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 16px;
     }
-    .bug{
-      position:absolute; left:0; top:0;               /* координаты ставим из JS */
-      width:56px; height:56px; border-radius:50%;
-      background:#ffb3b3; box-shadow:0 2px 8px #0003;
-      display:flex; align-items:center; justify-content:center;
-      font-size:24px; line-height:1; cursor:pointer; user-select:none;
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 12px;
     }
-    .bug span{ transform: translateY(-1px); }
-    #postGame{ max-width:min(680px,92vw); margin:16px auto; }
+    .board, .playfield {
+      position: relative;
+      width: min(680px, 92vw);
+      height: min(420px, 60vh);
+      margin: 16px auto;
+      border: 2px dashed var(--ink);
+      background: repeating-linear-gradient(135deg, #0000 0 12px, #0001 12px 24px);
+    }
+    .bug {
+      position: absolute;
+      left: 0; top: 0;
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #ffb3b3;
+      box-shadow: 0 2px 8px #0003;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+    .bug span { transform: translateY(-1px); }
+    #postGame { max-width: min(680px, 92vw); margin: 16px auto; }
+
+    /* Кнопка звука — стиль в виде “таблетки” */
+    #soundToggle.pill {
+      cursor: pointer;
+      background: var(--card);
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      padding: .35rem .75rem;
+      transition: background 0.2s;
+    }
+    #soundToggle[aria-pressed="true"] {
+      background: #111;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -40,21 +72,14 @@
 
     <h1>Bug Busters 🐞</h1>
 
-    <div class="pills" style="margin:8px 0 12px;">
-      <button id="soundToggle" class="btn" aria-pressed="false">🔈 Sound: OFF</button>
-    </div>
-    
+    <!-- Верхняя панель -->
     <div class="hud">
-      <span id="time"  data-time  class="pill">Time: 0.0s</span>
+      <span id="time"  data-time  class="pill">Time: 20.0s</span>
+      <button id="soundToggle" class="pill" aria-pressed="false">🔇 Sound: OFF</button>
       <span id="score" data-score class="pill">Score: 0</span>
     </div>
 
-    <div class="hud">
-      <span id="time"  data-time  class="pill">Time: 20.0s</span>
-      <button id="soundToggle" class="pill" type="button">🔊 Sound: on</button>
-      <span id="score" data-score class="pill">Score: 0</span>
-    </div>
-    
+    <!-- Игровое поле -->
     <main class="board playfield" id="playfield" aria-label="playfield">
       <button id="bug" class="bug" aria-label="Bug — click to score"><span>🐞</span></button>
     </main>
@@ -63,9 +88,11 @@
 
     <!-- Пост-экран: имя, отправка очков, лидерборд -->
     <section id="postGame" aria-live="polite" hidden>
-      <p id="finalText" style="margin:0 0 8px 0;">Time! Final score: <b id="finalScore">0</b></p>
+      <p id="finalText" style="margin:0 0 8px 0;">
+        Time! Final score: <b id="finalScore">0</b>
+      </p>
 
-      <form id="scoreForm" style="display:flex; gap:8px; align-items:center">
+      <form id="scoreForm" style="display:flex; gap:8px; align-items:center;">
         <label for="playerName" class="sr-only">Name</label>
         <input id="playerName" name="name" type="text" placeholder="Name (1–12 chars)" maxlength="12" required
                style="padding:.5rem .6rem; border:2px solid var(--ink); border-radius:8px;">
@@ -75,7 +102,8 @@
       <div id="scoreStatus" style="margin-top:8px; font-size:14px; color:var(--muted);"></div>
       <ol id="leaderboard"></ol>
 
-      <button class="btn" id="restartBtn" type="button" style="background:#ff6f3d; margin-top:8px;">Restart</button>
+      <button class="btn" id="restartBtn" type="button"
+              style="background:#ff6f3d; margin-top:8px;">Restart</button>
     </section>
 
     <p class="footer">© 2025 — Fun games every day!</p>
