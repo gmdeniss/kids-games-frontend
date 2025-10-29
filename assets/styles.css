@@ -1,0 +1,33 @@
+:root{
+  --bg:#f7f7f8; --ink:#111; --muted:#666; --card:#fff; --accent:#e63946; --pill:#111;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f1115; --ink:#eaeef3; --muted:#92a0b3; --card:#161a22; --pill:#eaeef3; }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font:16px/1.5 ui-sans-serif,system-ui,Segoe UI,Roboto,Inter,Arial;
+  color:var(--ink); background:var(--bg);
+}
+.container{ max-width:1100px; margin:32px auto; padding:0 16px; }
+.header{ display:flex; gap:16px; align-items:center; margin-bottom:24px; }
+.header h1{ margin:0; font-size:clamp(20px,3vw,28px); }
+.grid{
+  display:grid; gap:16px;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+}
+.card{
+  background:var(--card); border:1px solid #0002; border-radius:12px; padding:16px;
+  display:flex; flex-direction:column; gap:12px; transition:translate .15s, box-shadow .15s;
+}
+.card:hover{ translate:0 -2px; box-shadow:0 6px 24px #0002; }
+.card h3{ margin:0 0 6px; font-size:18px; }
+.card p{ margin:0; color:var(--muted); font-size:14px; }
+.btn{
+  display:inline-block; align-self:flex-start; margin-top:auto;
+  padding:10px 14px; border-radius:10px; text-decoration:none; color:#fff; background:#111;
+}
+.badge{ padding:4px 8px; border-radius:999px; background:#000; color:#fff; font-size:12px; }
+.pills{ display:flex; gap:8px; align-items:center; }
+.footer{ color:var(--muted); font-size:12px; margin-top:24px; }
