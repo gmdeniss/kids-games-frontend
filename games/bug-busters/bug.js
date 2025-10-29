@@ -10,7 +10,7 @@ const BUG_SIZE      = 56;      // px, диаметр «жука»
 const AUTO_HOP      = true;    // true = баг прыгает сам каждые HOP_EVERY_MS
 
 // DOM
-const playfield   = document.querySelector('.playfield');
+const playfield = document.querySelector('.playfield, .board');
 const bug         = document.getElementById('bug') || createBug();
 const timeEl      = document.querySelector('[data-time]');
 const scoreEl     = document.querySelector('[data-score]');
