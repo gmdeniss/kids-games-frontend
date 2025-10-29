@@ -154,7 +154,7 @@ startBtn?.addEventListener('click', () => {
 });
 
 sounds.click.volume = 0.8;
-sounds.click.playbackRate = 1.55;
+sounds.click.playbackRate = 1.05;
 
 bug.addEventListener('click', () => {
   if (!state.running) return;
