@@ -153,8 +153,8 @@ startBtn?.addEventListener('click', () => {
   startGame();
 });
 
-sounds.click.volume = 0.9;
-sounds.click.playbackRate = 1.5;
+sounds.click.volume = 0.7;
+sounds.click.playbackRate = 1.3;
 
 bug.addEventListener('click', () => {
   if (!state.running) return;
@@ -166,8 +166,6 @@ bug.addEventListener('click', () => {
       sounds.click.pause();
       sounds.click.currentTime = 0;
       sounds.click.play();
-      bug.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }],
-                  { duration: 120, easing: 'ease-out' });
     } catch {}
   }
 });
