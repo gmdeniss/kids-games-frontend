@@ -5,34 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Bug Busters 🐞</title>
 
-  <!-- Путь к CSS из подпапки games/bug-busters -> вверх на два уровня -->
   <link rel="stylesheet" href="../../assets/styles.css">
+
   <style>
-/* Поле по центру */
-.board, .playfield{
-  position: relative;
-  width: min(680px, 92vw);
-  height: min(420px, 60vh);
-  margin: 16px auto;
-  border: 2px dashed var(--ink);
-  background: repeating-linear-gradient(135deg, #0000 0 12px, #0001 12px 24px);
-}
+  .board, .playfield{
+    position: relative;
+    width: min(680px, 92vw);
+    height: min(420px, 60vh);
+    margin: 16px auto;
+    border: 2px dashed var(--ink);
+    background: repeating-linear-gradient(135deg,#0000 0 12px,#0001 12px 24px);
+  }
 
-/* Жук — чёткий размер и центрированный контент */
-.bug{
-  position: absolute; left: 0; top: 0;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: #ffb3b3; box-shadow: 0 2px 8px #0003;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; line-height: 1; cursor: pointer; user-select: none;
-}
-.bug span{ transform: translateY(-1px); }
+  .bug{
+    position: absolute; left: 0; top: 0;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #ffb3b3; box-shadow: 0 2px 8px #0003;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; cursor:pointer; user-select:none;
+  }
+  .bug span{ transform: translateY(-1px); }
 
-/* Панель после игры — по центру */
-.panel{ max-width: min(680px, 92vw); margin: 16px auto; }
+  .panel{ max-width:min(680px,92vw); margin:16px auto; }
   </style>
 </head>
 <body>
+
   <div class="container">
 
     <div class="back">
@@ -42,25 +40,24 @@
     <h1>Bug Busters 🐞</h1>
 
     <div class="hud">
-      <span id="time" class="pill">Time: 0.0s</span>
-      <span id="score" class="pill">Score: 0</span>
+      <span id="time" data-time class="pill">Time: 0.0s</span>
+      <span id="score" data-score class="pill">Score: 0</span>
     </div>
 
- <main class="board playfield" id="playfield" aria-label="playfield">
-  <button id="bug" class="bug" aria-label="Bug — click to score">
-    <span>🐞</span>
-  </button>
- </main>
+    <main class="board playfield" id="playfield" aria-label="playfield">
+      <button id="bug" class="bug" aria-label="Bug — click to score">
+        <span>🐞</span>
+      </button>
+    </main>
 
     <p>Tap the bug fast! 🐞⚡</p>
 
-    <!-- Пост-экран: имя, отправка очков, таблица лидеров -->
     <section id="postGame" aria-live="polite">
       <p id="finalText" style="margin:0 0 8px 0;">Time! Final score: <b id="finalScore">0</b></p>
 
       <form id="scoreForm" style="display:flex; gap:8px; align-items:center">
-        <label for="playerName" class="sr-only">Name</label>
-        <input id="playerName" name="name" type="text" placeholder="Name (1–12 chars)" maxlength="12" required
+        <input id="playerName" name="name" type="text"
+               placeholder="Name (1–12 chars)" maxlength="12" required 
                style="padding:.5rem .6rem; border:2px solid var(--ink); border-radius:8px;">
         <button class="btn" id="submitBtn" type="submit">Submit Score</button>
       </form>
@@ -69,156 +66,13 @@
 
       <ol id="leaderboard"></ol>
 
-      <button class="btn" id="restartBtn" type="button" style="background:#ff6f3d; margin-top:8px;">Restart</button>
+      <button class="btn" id="restartBtn" type="button"
+              style="background:#ff6f3d; margin-top:8px;">Restart</button>
     </section>
 
     <p class="footer">© 2025 — Fun games every day!</p>
   </div>
 
-  <script>
-    // === Конфиг ===
-    const API_BASE = 'https://kids-games-backend.onrender.com'; // HTTPS обязателен на GitHub Pages
-
-    // === DOM ===
-    const board = document.getElementById('board');
-    const bug = document.getElementById('bug');
-    const timeEl = document.getElementById('time');
-    const scoreEl = document.getElementById('score');
-
-    const postGame = document.getElementById('postGame');
-    const finalScoreTxt = document.getElementById('finalScore');
-    const form = document.getElementById('scoreForm');
-    const nameInput = document.getElementById('playerName');
-    const submitBtn = document.getElementById('submitBtn');
-    const statusEl = document.getElementById('scoreStatus');
-    const leaderboardEl = document.getElementById('leaderboard');
-    const restartBtn = document.getElementById('restartBtn');
-
-    // === Геймплей ===
-    const ROUND_MS = 20000;           // 20 секунд
-    const HOP_MIN = 500, HOP_MAX = 800;
-
-    const state = { running:false, start:0, tickId:0, hopId:0, score:0, backend:false };
-
-    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-    function rnd(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
-
-    function updateTimer(ms){ timeEl.textContent = 'Time: ' + (ms/1000).toFixed(1) + 's'; }
-    function updateScore(){ scoreEl.textContent = 'Score: ' + state.score; }
-
-    function placeBugRandom(){
-      const bw = board.clientWidth, bh = board.clientHeight, r = 28; // пол-диаметра
-      const x = rnd(r, bw - r), y = rnd(r, bh - r);
-      bug.style.left = (x - r) + 'px';
-      bug.style.top  = (y - r) + 'px';
-    }
-
-    function hopLoop(){
-      const dt = rnd(HOP_MIN, HOP_MAX);
-      state.hopId = setTimeout(()=>{ placeBugRandom(); hopLoop(); }, dt);
-    }
-
-    function tick(){
-      const ms = Date.now() - state.start;
-      updateTimer(ms);
-      if (ms >= ROUND_MS) { endGame(); return; }
-      state.tickId = requestAnimationFrame(tick);
-    }
-
-    function startGame(){
-      // Спрятать пост-экран
-      postGame.style.display = 'none';
-      statusEl.textContent = '';
-      leaderboardEl.innerHTML = '';
-
-      // Старт
-      state.running = true;
-      state.score = 0;
-      updateScore();
-      state.start = Date.now();
-      placeBugRandom();
-      hopLoop();
-      tick();
-      nameInput.value = localStorage.getItem('kg_name') || '';
-    }
-
-    function endGame(){
-      state.running = false;
-      cancelAnimationFrame(state.tickId);
-      clearTimeout(state.hopId);
-
-      finalScoreTxt.textContent = state.score;
-      postGame.style.display = 'block';
-      nameInput.focus();
-
-      // Показать актуальный лидерборд (не критично, если упадёт)
-      refreshLeaderboard().catch(()=>{});
-    }
-
-    bug.addEventListener('click', () => {
-      if (!state.running) return;
-      state.score += 1;
-      updateScore();
-      placeBugRandom();
-    });
-
-    restartBtn.addEventListener('click', startGame);
-
-    // === Бэкенд ===
-    async function refreshLeaderboard(){
-      try{
-        const r = await fetch(API_BASE + '/scores', { cache:'no-store' });
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const data = await r.json();
-        leaderboardEl.innerHTML = data
-          .sort((a,b)=>b.score - a.score)
-          .slice(0,10)
-          .map((x,i)=>`<li>${i+1}. <b>${escapeHtml(x.name)}</b> — ${x.score}</li>`).join('');
-        state.backend = true;
-      }catch(e){
-        state.backend = false;
-        leaderboardEl.innerHTML = '<li>Scores unavailable (server sleeping or offline).</li>';
-      }
-    }
-
-    form.addEventListener('submit', async (ev)=>{
-      ev.preventDefault();
-      const name = (nameInput.value || '').trim().slice(0,12);
-      if (!name) { statusEl.textContent = 'Enter your name.'; return; }
-
-      localStorage.setItem('kg_name', name);
-
-      submitBtn.disabled = true;
-      statusEl.textContent = 'Submitting…';
-
-      try{
-        const r = await fetch(API_BASE + '/scores', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ name, score: state.score })
-        });
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        const js = await r.json();
-        if (js && js.ok){
-          statusEl.textContent = 'Leaderboard updated.';
-          await refreshLeaderboard();
-        } else {
-          statusEl.textContent = 'Server declined the score.';
-        }
-      }catch(e){
-        statusEl.textContent = 'Can’t submit (server sleeping?). Try again in 10–20s.';
-      }finally{
-        submitBtn.disabled = false;
-      }
-    });
-
-    function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-
-    // Автостарт
-    (async function init(){
-      await refreshLeaderboard();   // проверим доступность API (и «разбудим» Render)
-      startGame();
-    })();
-  </script>
+  <script src="./bug.js"></script>
 </body>
 </html>
