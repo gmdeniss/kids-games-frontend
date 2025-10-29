@@ -69,3 +69,14 @@ body{
 @media (max-width: 480px){
   .bug{ width: 60px; height: 60px; font-size: 26px; }
 }
+
+/* Таймер в опасной зоне */
+.danger {
+  color: var(--accent);
+  animation: flash 0.4s infinite alternate;
+}
+
+@keyframes flash {
+  from { transform: scale(1); }
+  to { transform: scale(1.2); }
+}
