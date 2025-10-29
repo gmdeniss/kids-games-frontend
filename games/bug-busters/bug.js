@@ -105,14 +105,25 @@ async function refreshLeaderboard(){
   try{
     const r = await fetch(API_BASE + '/scores', { cache:'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
+
     const data = await r.json();
-    leaderboard.innerHTML = data
-      .sort((a,b)=>b.score - a.score)
-      .slice(0,10)
-      .map(x => `<li><b>${escapeHtml(x.name)}</b> — ${x.score}</li>`)
-      .join('');
+    
+    // Сортируем + берем ТОП-10
+    const top = data.sort((a,b)=>b.score - a.score).slice(0,10);
+
+    // Очищаем список перед обновлением
+    leaderboard.innerHTML = '';
+
+    // Добавляем красивыми <li>
+    top.forEach((row, i) => {
+      const li = document.createElement('li');
+      li.textContent = `${i+1}. ${row.name} — ${row.score}`;
+      leaderboard.appendChild(li);
+    });
+
   }catch(e){
-    leaderboard.innerHTML = '<li>Scores unavailable (server sleeping or offline).</li>';
+    leaderboard.innerHTML =
+      '<li>Scores unavailable (server sleeping or offline).</li>';
   }
 }
 
