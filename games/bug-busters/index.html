@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Busters 🐞</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <style>
+    .game {
+      width: min(600px, 100%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 20px;
+    }
+    #playfield {
+      width: 100%;
+      aspect-ratio: 1.2;
+      background: repeating-linear-gradient(
+        45deg,
+        var(--card),
+        var(--card) 10px,
+        var(--bg) 10px,
+        var(--bg) 20px
+      );
+      border: 2px dashed var(--ink);
+      position: relative;
+      cursor: pointer;
+    }
+    #bug {
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      background: url("https://raw.githubusercontent.com/rickstavneev/bug-sprite/main/bug.png") center/cover no-repeat;
+      cursor: pointer;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .hidden { display: none; }
+    .postgame {
+      text-align: center;
+    }
+    input {
+      padding: 6px;
+      width: 150px;
+    }
+  </style>
+
+  <script type="module" src="./bug.js"></script>
+</head>
+<body>
+  <div class="container game">
+    <header class="header">
+      <a href="../../" class="btn">← Games</a>
+      <h1>Bug Busters 🐞</h1>
+    </header>
+
+    <div class="scoreboard">
+      <span id="timer">Time: 0s</span>
+      <span id="score">Score: 0</span>
+    </div>
+
+    <div id="playfield">
+      <div id="bug"></div>
+    </div>
+
+    <div id="postgame" class="postgame hidden">
+      <p id="finalText">Final score: 0</p>
+      <form id="scoreForm">
+        <input id="playerName" maxlength="12" placeholder="Your name"/>
+        <button class="btn" type="submit">Submit Score</button>
+      </form>
+      <p id="scoreStatus"></p>
+      <ol id="leaderboard"></ol>
+      <button id="restartBtn" class="btn">Restart</button>
+    </div>
+
+    <footer class="footer">Tap the bug fast! 🐞⚡️</footer>
+  </div>
+</body>
+</html>
