@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Math Worksheets ✏️</title>
+  <link rel="stylesheet" href="../../assets/styles.css">
+  <style>
+    .container{max-width:960px;margin:32px auto;padding:0 16px;}
+    .toolbar{display:grid;gap:12px;grid-template-columns: repeat(auto-fit,minmax(160px,1fr));align-items:end;margin:12px 0 16px}
+    fieldset{border:1px solid #0002;border-radius:10px;padding:10px}
+    legend{padding:0 6px;color:var(--muted);font-size:12px}
+    label{display:flex;gap:8px;align-items:center}
+    input[type="number"]{width:100%;padding:.5rem;border:1px solid #0003;border-radius:8px}
+    .btn{display:inline-block;padding:.6rem .9rem;background:#111;color:#fff;border:none;border-radius:10px;cursor:pointer}
+    .btn:disabled{opacity:.6;cursor:default}
+    .sheet{background:var(--card);border:1px solid #0002;border-radius:12px;padding:16px;margin:16px 0}
+    .meta{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--muted);font-size:14px}
+    .problems{columns:2;column-gap:24px}
+    .three-cols .problems{columns:3}
+    .item{break-inside:avoid;margin:0 0 10px;font-size:20px}
+    .q{display:inline-block;min-width:160px}
+    .dots{display:inline-block;min-width:120px;border-bottom:2px dotted #aaa; translate: 0 -2px;}
+    .key .dots{border:none;color:var(--muted)}
+    .footer{margin-top:12px;color:var(--muted);font-size:12px}
+    @media print{
+      .toolbar,.back{display:none !important}
+      body{background:#fff}
+      .container{max-width:none;margin:0;padding:0}
+      .sheet{border:none;margin:0;padding:0}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="back"><a class="pill" href="../../index.html">← Games</a></div>
+  <h1>Math Worksheets ✏️</h1>
+
+  <form id="controls" class="toolbar">
+    <fieldset>
+      <legend>Операции</legend>
+      <label><input type="checkbox" name="ops" value="+"> Сложение (+)</label>
+      <label><input type="checkbox" name="ops" value="-"> Вычитание (−)</label>
+      <label><input type="checkbox" name="ops" value="*"> Умножение (×)</label>
+      <label><input type="checkbox" name="ops" value="/"> Деление (÷)</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Сложность</legend>
+      <select id="preset" aria-label="Диапазон">
+        <option value="10">≤ 10</option>
+        <option value="20" selected>≤ 20</option>
+        <option value="100">≤ 100</option>
+        <option value="1000">≤ 1000</option>
+      </select>
+      <label style="margin-top:8px;">
+        Max значение:
+        <input type="number" id="max" min="5" step="1" value="20">
+      </label>
+      <label style="margin-top:8px;">
+        Кол-во задач:
+        <input type="number" id="count" min="5" max="200" step="5" value="20">
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Опции</legend>
+      <label><input type="checkbox" id="noNegative" checked> Без отрицательных ответов</label>
+      <label><input type="checkbox" id="intDiv" checked> Только целые при делении</label>
+      <label><input type="checkbox" id="threeCols"> 3 колонки</label>
+      <label><input type="checkbox" id="seeded"> Фиксированный seed</label>
+      <input type="number" id="seed" value="12345" step="1" style="width:100px" />
+    </fieldset>
+
+    <div>
+      <button class="btn" id="generate" type="button">Сгенерировать</button>
+      <button class="btn" id="printSheet" type="button">Печать листа</button>
+      <button class="btn" id="printKey" type="button">Печать ключа</button>
+    </div>
+  </form>
+
+  <div id="sheet" class="sheet">
+    <div class="meta">
+      <div>Вариант: <span id="variant">—</span></div>
+      <div>Дата: <span id="date"></span></div>
+    </div>
+    <div id="problemsWrap" class="problems"></div>
+    <div class="footer">© 2025 — Practice makes progress!</div>
+  </div>
+</div>
+
+<script>
+/* ---------- PRNG для воспроизводимости (Mulberry32) ---------- */
+function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
+function rndInt(rng, a, b){return Math.floor(a + rng()*(b-a+1));}
+
+/* ---------- Генерация задач ---------- */
+function makeProblem(rng, ops, max, opt){
+  const op = ops[rndInt(rng,0,ops.length-1)];
+  let a,b,question,answer;
+  if(op==='+'){
+    a=rndInt(rng,0,max); b=rndInt(rng,0,max); answer=a+b;
+    if(opt.noNegative && answer<0) return makeProblem(rng,ops,max,opt);
+    if(answer>max && max<=20){ // мягкий контроль сложности для маленьких детей
+      b = Math.max(0, max - a); answer=a+b;
+    }
+    question=`${a} + ${b} =`;
+  }else if(op==='-'){
+    a=rndInt(rng,0,max); b=rndInt(rng,0,max);
+    if(opt.noNegative && b>a){ [a,b]=[b,a]; }
+    answer=a-b; question=`${a} − ${b} =`;
+  }else if(op==='*'){
+    // для маленьких значений ограничим множители
+    const cap = Math.min(max, 12);
+    a=rndInt(rng,0,cap); b=rndInt(rng,0,cap); answer=a*b;
+    question=`${a} × ${b} =`;
+  }else{ // '/'
+    const cap = Math.min(max, 12);
+    b = rndInt(rng,1,cap); // делитель != 0
+    answer = rndInt(rng,0,cap);
+    a = b * answer; // гарантируем целое деление
+    if(!opt.intDiv){ // если разрешены дроби (на будущее), можно генерить произвольно
+      // но по умолчанию оставим целые
+    }
+    question=`${a} ÷ ${b} =`;
+  }
+  return {q:question, a:answer};
+}
+
+function generateSet(opts){
+  const {ops, max, count, noNegative, intDiv, seed} = opts;
+  const rng = mulberry32(seed ?? Math.floor(Math.random()*1e9));
+  const seen = new Set();
+  const list = [];
+  while(list.length < count){
+    const p = makeProblem(rng, ops, max, {noNegative,intDiv});
+    const key = p.q + '|' + p.a;
+    if(seen.has(key)) continue;
+    seen.add(key);
+    list.push(p);
+  }
+  return list;
+}
+
+/* ---------- Рендер ---------- */
+function renderProblems(list, showKey=false, threeCols=false){
+  const wrap = document.getElementById('problemsWrap');
+  wrap.classList.toggle('key', showKey);
+  const sheet = document.getElementById('sheet');
+  sheet.classList.toggle('three-cols', threeCols);
+
+  wrap.innerHTML = list.map((p,i)=>{
+    return `<div class="item"><span class="q">${i+1}. ${p.q}</span> <span class="dots">${showKey? p.a : '&nbsp;'}</span></div>`;
+  }).join('');
+}
+
+/* ---------- UI ---------- */
+const form = document.getElementById('controls');
+const dateEl = document.getElementById('date');
+const varEl  = document.getElementById('variant');
+dateEl.textContent = new Date().toLocaleDateString();
+
+function getOptions(){
+  const opVals = [...form.querySelectorAll('input[name="ops"]:checked')].map(i=>i.value);
+  const preset = document.getElementById('preset').value;
+  const maxEl  = document.getElementById('max');
+  if(!maxEl.dataset.touched){ maxEl.value = preset; } // синхронизируем первый раз
+  const max = Math.max(5, parseInt(maxEl.value||preset,10));
+  const count = Math.max(5, Math.min(200, parseInt(document.getElementById('count').value||20,10)));
+
+  return {
+    ops: opVals.length? opVals : ['+'], // дефолт — только сложение
+    max, count,
+    noNegative: document.getElementById('noNegative').checked,
+    intDiv: document.getElementById('intDiv').checked,
+    threeCols: document.getElementById('threeCols').checked,
+    seeded: document.getElementById('seeded').checked,
+    seed: document.getElementById('seed').value|0
+  };
+}
+document.getElementById('preset').addEventListener('change', e=>{
+  const maxEl=document.getElementById('max');
+  maxEl.value = e.target.value;
+});
+document.getElementById('max').addEventListener('input', e=>{
+  e.currentTarget.dataset.touched = '1';
+});
+
+let current = {list:[], opts:null};
+function regenerate(showKey=false){
+  const opts = getOptions();
+  const seedUsed = opts.seeded? (opts.seed|0) : Math.floor(Math.random()*1e9);
+  const list = generateSet({...opts, seed:seedUsed});
+  current = {list, opts:{...opts, seed:seedUsed}};
+  varEl.textContent = seedUsed;
+  renderProblems(list, showKey, opts.threeCols);
+}
+
+document.getElementById('generate').addEventListener('click', ()=>regenerate(false));
+document.getElementById('printSheet').addEventListener('click', ()=>{
+  renderProblems(current.list, false, current.opts?.threeCols);
+  window.print();
+});
+document.getElementById('printKey').addEventListener('click', ()=>{
+  renderProblems(current.list, true, current.opts?.threeCols);
+  window.print();
+});
+
+/* Авто-генерация при открытии */
+regenerate(false);
+</script>
+</body>
+</html>
