@@ -214,9 +214,16 @@ function setTotal(n){ totalEl.textContent=n; }
 
 function formatSec(s){ return s.toFixed(1)+'s'; }
 function startTimer(){
+  cancelAnimationFrame(current.tickId);
+  current.time = 0;
+  const mode=current.opts.timerMode, limit=current.opts.timerSeconds;
+  if(mode==='off'){
+    current.running=false;
+    timerEl.textContent = 'Таймер выключен';
+    return;
+  }
   current.start = performance.now();
   current.running=true;
-  const mode=current.opts.timerMode, limit=current.opts.timerSeconds;
   function frame(t){
     if(!current.running) return;
     const ms = (t-current.start);
@@ -235,7 +242,6 @@ function startTimer(){
       current.tickId=requestAnimationFrame(frame);
     }
   }
-  cancelAnimationFrame(current.tickId);
   current.tickId=requestAnimationFrame(frame);
 }
 function stopTimer(){ current.running=false; cancelAnimationFrame(current.tickId); }
