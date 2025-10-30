@@ -5,31 +5,68 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Math Worksheets ✏️</title>
   <link rel="stylesheet" href="../../assets/styles.css">
-  <style>
-    .container{max-width:960px;margin:32px auto;padding:0 16px;}
-    .toolbar{display:grid;gap:12px;grid-template-columns: repeat(auto-fit,minmax(160px,1fr));align-items:end;margin:12px 0 16px}
-    fieldset{border:1px solid #0002;border-radius:10px;padding:10px}
-    legend{padding:0 6px;color:var(--muted);font-size:12px}
-    label{display:flex;gap:8px;align-items:center}
-    input[type="number"]{width:100%;padding:.5rem;border:1px solid #0003;border-radius:8px}
-    .btn{display:inline-block;padding:.6rem .9rem;background:#111;color:#fff;border:none;border-radius:10px;cursor:pointer}
-    .btn:disabled{opacity:.6;cursor:default}
-    .sheet{background:var(--card);border:1px solid #0002;border-radius:12px;padding:16px;margin:16px 0}
-    .meta{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--muted);font-size:14px}
-    .problems{columns:2;column-gap:24px}
-    .three-cols .problems{columns:3}
-    .item{break-inside:avoid;margin:0 0 10px;font-size:20px}
-    .q{display:inline-block;min-width:160px}
-    .dots{display:inline-block;min-width:120px;border-bottom:2px dotted #aaa; translate: 0 -2px;}
-    .key .dots{border:none;color:var(--muted)}
-    .footer{margin-top:12px;color:var(--muted);font-size:12px}
-    @media print{
-      .toolbar,.back{display:none !important}
-      body{background:#fff}
-      .container{max-width:none;margin:0;padding:0}
-      .sheet{border:none;margin:0;padding:0}
-    }
-  </style>
+<style>
+  .container{max-width:960px;margin:32px auto;padding:0 16px;}
+  .toolbar{
+    display:grid;
+    gap:12px;
+    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+    align-items:end;
+    margin:12px 0 16px;
+  }
+  fieldset{border:1px solid #0002;border-radius:10px;padding:10px}
+  legend{padding:0 6px;color:var(--muted);font-size:12px}
+  label{display:flex;gap:8px;align-items:center}
+  input[type="number"]{width:100%;padding:.5rem;border:1px solid #0003;border-radius:8px}
+  .btn{display:inline-block;padding:.6rem .9rem;background:#111;color:#fff;border:none;border-radius:10px;cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:default}
+  .sheet{
+    background:var(--card);
+    border:1px solid #0002;
+    border-radius:12px;
+    padding:16px;
+    margin:16px 0;
+  }
+  .meta{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:8px;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .problems{columns:2;column-gap:24px}
+  .three-cols .problems{columns:3}
+  .item{break-inside:avoid;margin:0 0 10px;font-size:20px}
+  .q{display:inline-block;min-width:160px}
+  .dots{
+    display:inline-block;
+    min-width:120px;
+    border-bottom:2px dotted #aaa;
+    translate:0 -2px;
+  }
+  .key .dots{border:none;color:var(--muted)}
+  .footer{margin-top:12px;color:var(--muted);font-size:12px}
+
+  /* ----------- Улучшенная печать (фикс «уезжания» задач) ----------- */
+  @media print{
+    .toolbar,.back{display:none !important}
+    body{background:#fff}
+    .container{max-width:none;margin:0;padding:0}
+
+    /* чуть меньше поля и паддинги листа */
+    @page { margin: 10mm; }
+    .sheet{border:none;margin:0;padding:8mm 10mm}
+
+    /* компактнее сетка и строки */
+    .problems{columns:2; column-gap:16px}
+    .item{font-size:18px; margin:0 0 6px; break-inside:avoid}
+    .q{min-width:120px}
+    .dots{min-width:90px; border-bottom:2px dotted #aaa; translate:0 -2px}
+    .meta{font-size:12px; margin-bottom:6px}
+    .footer{font-size:11px; margin-top:8px}
+  }
+</style>
 </head>
 <body>
 <div class="container">
