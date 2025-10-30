@@ -3,57 +3,49 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Math Worksheets ✏️</title>
+  <title>Math Quiz ⚡</title>
   <link rel="stylesheet" href="../../assets/styles.css">
   <style>
-    .container{max-width:960px;margin:32px auto;padding:0 16px;}
-    .toolbar{display:grid;gap:12px;grid-template-columns: repeat(auto-fit,minmax(180px,1fr));align-items:end;margin:12px 0 16px}
+    .container{max-width:980px;margin:32px auto;padding:0 16px}
+    .toolbar{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));align-items:end;margin:12px 0 16px}
     fieldset{border:1px solid #0002;border-radius:10px;padding:10px}
     legend{padding:0 6px;color:var(--muted);font-size:12px}
     label{display:flex;gap:8px;align-items:center}
-    input[type="number"], select{width:100%;padding:.5rem;border:1px solid #0003;border-radius:8px}
+    input[type="number"],select{width:100%;padding:.5rem;border:1px solid #0003;border-radius:8px}
     .btn{display:inline-block;padding:.6rem .9rem;background:#111;color:#fff;border:none;border-radius:10px;cursor:pointer}
     .btn:disabled{opacity:.6;cursor:default}
-
-    .sheet{background:var(--card);border:1px solid #0002;border-radius:12px;padding:16px;margin:16px 0}
-    .meta{display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;color:var(--muted);font-size:14px}
-    .timer-pill{border:1px solid var(--ink); border-radius:999px; padding:.25rem .6rem}
-
-    /* печатный лист */
-    .problems{columns:2;column-gap:24px}
-    .item{break-inside:avoid;margin:0 0 10px;font-size:20px}
-    .q{display:inline-block;min-width:160px}
-    .dots{display:inline-block;min-width:120px;border-bottom:2px dotted #aaa; translate: 0 -2px;}
-    .key .dots{border:none;color:var(--muted)}
-    .footer{margin-top:12px;color:var(--muted);font-size:12px}
-
-    /* интерактив */
-    .playlist{display:grid;grid-template-columns:1fr 120px;gap:8px 12px;max-width:680px}
-    .playlist .q{min-width:auto}
-    .ans{width:100%;padding:.45rem .6rem;border:1px solid #0003;border-radius:8px;font-size:16px}
-    .ans.ok{border-color:#2ecc71;background:#2ecc7115}
-    .ans.bad{border-color:#e63946;background:#e6394615}
-    .scoreline{margin:8px 0 0; color:var(--muted);}
-
-    @media print{
-      .toolbar,.back,.controls-row{display:none !important}
-      body{background:#fff}
-      .container{max-width:none;margin:0;padding:0}
-      .sheet{border:none;margin:0;padding:0}
-    }
+    .pill.small{padding:.25rem .6rem;font-size:12px}
+    .quiz{background:var(--card);border:1px solid #0002;border-radius:12px;padding:16px;margin:16px 0}
+    .meta{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;margin-bottom:8px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    @media (max-width:700px){ .grid{grid-template-columns:1fr} }
+    .item{display:flex;align-items:center;gap:8px;border:1px dashed #0001;border-radius:10px;padding:10px}
+    .q{min-width:115px;font-size:18px}
+    .ans{flex:1;display:flex;gap:8px;align-items:center}
+    .ans input{width:110px;padding:.45rem .55rem;border:2px solid #0002;border-radius:10px;font-size:16px}
+    .ans .mark{width:22px;height:22px;border-radius:50%}
+    .ok{background:#22c55e33;border:2px solid #22c55e}
+    .bad{background:#ef444433;border:2px solid #ef4444}
+    .stats{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .stats b{margin:0 4px}
+    .muted{color:var(--muted)}
+    .hide{display:none !important}
+    .footer{margin-top:8px;color:var(--muted);font-size:12px}
   </style>
 </head>
 <body>
 <div class="container">
+
   <div class="back">
     <a class="pill" href="../../index.html">← Games</a>
   </div>
-  <h1>Math Worksheets ✏️</h1>
+
+  <h1>Math Quiz ⚡</h1>
 
   <form id="controls" class="toolbar">
     <fieldset>
       <legend>Операции</legend>
-      <label><input type="checkbox" name="ops" value="+"> Сложение (+)</label>
+      <label><input type="checkbox" name="ops" value="+" checked> Сложение (+)</label>
       <label><input type="checkbox" name="ops" value="-"> Вычитание (−)</label>
       <label><input type="checkbox" name="ops" value="*"> Умножение (×)</label>
       <label><input type="checkbox" name="ops" value="/"> Деление (÷)</label>
@@ -62,280 +54,289 @@
     <fieldset>
       <legend>Сложность</legend>
       <label>Пресет
-        <select id="preset" aria-label="Диапазон">
+        <select id="preset">
           <option value="10">≤ 10</option>
           <option value="20" selected>≤ 20</option>
           <option value="100">≤ 100</option>
-          <option value="1000">≤ 1000</option>
         </select>
       </label>
-      <label style="margin-top:8px;">
-        Max значение:
-        <input type="number" id="max" min="5" step="1" value="20">
+      <label style="margin-top:8px;">Max
+        <input type="number" id="max" min="5" value="20">
       </label>
-      <label style="margin-top:8px;">
-        Кол-во задач:
+      <label style="margin-top:8px;">Задач
         <input type="number" id="count" min="5" max="200" step="5" value="20">
       </label>
     </fieldset>
 
     <fieldset>
       <legend>Опции</legend>
-      <label><input type="checkbox" id="noNegative" checked> Без отрицательных ответов</label>
+      <label><input type="checkbox" id="noNegative" checked> Без отрицательных</label>
       <label><input type="checkbox" id="intDiv" checked> Только целые при делении</label>
-      <label><input type="checkbox" id="seeded"> Фиксированный seed</label>
-      <input type="number" id="seed" value="12345" step="1" style="width:120px" />
+      <label><input type="checkbox" id="seeded"> Фикс. seed</label>
+      <label>Seed <input type="number" id="seed" value="12345"></label>
     </fieldset>
 
     <fieldset>
-      <legend>Таймер</legend>
-      <label>Режим
-        <select id="timerMode">
-          <option value="off" selected>Выкл</option>
-          <option value="up">Счёт ↑</option>
-          <option value="down">Обратный ↓</option>
+      <legend>Проверка и время</legend>
+      <label>Проверка
+        <select id="checkMode">
+          <option value="instant">Мгновенно</option>
+          <option value="manual" selected>По кнопке</option>
         </select>
       </label>
-      <label style="margin-top:8px;">
-        Сек (для обратного):
-        <input id="timerSec" type="number" min="1" step="1" value="20">
+      <label style="margin-top:8px;">Таймер
+        <select id="timerMode">
+          <option value="off" selected>Выкл</option>
+          <option value="down">Обратный</option>
+          <option value="up">Секундомер</option>
+        </select>
       </label>
-      <div class="pill" style="margin-top:8px;">Время: <span id="timerText">—</span></div>
+      <label style="margin-top:8px;">Время (сек)
+        <input type="number" id="timerSeconds" min="10" max="600" step="10" value="120">
+      </label>
     </fieldset>
 
-    <div class="controls-row">
-      <button class="btn" id="generate" type="button">Сгенерировать (лист)</button>
-      <button class="btn" id="printSheet" type="button">Печать листа</button>
-      <button class="btn" id="printKey" type="button">Печать ключа</button>
-      <button class="btn" id="startBtn" type="button" style="background:#1a7f37">Начать (интерактив)</button>
-      <button class="btn" id="checkBtn" type="button" style="background:#6b21a8">Проверить</button>
+    <div>
+      <button id="start" type="button" class="btn">Старт / Новая серия</button>
+      <button id="checkAll" type="button" class="btn">Проверить всё</button>
+      <div class="pills" style="margin-top:8px">
+        <span id="best" class="pill small muted">Лучший: —</span>
+      </div>
     </div>
   </form>
 
-  <!-- Печатный лист -->
-  <div id="sheet" class="sheet">
+  <section id="quiz" class="quiz hide" aria-live="polite">
     <div class="meta">
-      <div>Вариант: <span id="variant">—</span></div>
-      <div>Дата: <span id="date"></span></div>
+      <div class="stats">
+        <span id="timer" class="pill">Время: 0.0s</span>
+        <span class="pill">Счёт: <b id="score">0</b>/<span id="total">0</span></span>
+        <span id="result" class="pill hide"></span>
+      </div>
+      <span class="muted">Вариант: <span id="variant">—</span></span>
     </div>
-    <div id="problemsWrap" class="problems"></div>
-    <div class="footer">© 2025 — Practice makes progress!</div>
-  </div>
+    <div id="grid" class="grid"></div>
+    <div class="footer">Подсказка: жми <b>Tab</b> для быстрого ввода. Enter в поле — сразу следующая задача.</div>
+  </section>
 
-  <!-- Интерактив -->
-  <div id="play" class="sheet" style="display:none">
-    <div class="meta">
-      <div>Интерактивная тренировка</div>
-      <div class="timer-pill">⏱️ <span id="timerText2">—</span></div>
-    </div>
-    <div id="quizWrap" class="playlist"></div>
-    <div class="scoreline" id="scoreLine"></div>
-  </div>
 </div>
 
 <script>
-/* ---------- PRNG ---------- */
+/* ---------- PRNG (Mulberry32) ---------- */
 function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296;};}
-function rndInt(rng, a, b){return Math.floor(a + rng()*(b-a+1));}
+const rInt = (rng,a,b)=>Math.floor(a + rng()*(b-a+1));
 
-/* ---------- Генерация задач ---------- */
-function makeProblem(rng, ops, max, opt){
-  const op = ops[rndInt(rng,0,ops.length-1)];
-  let a,b,question,answer;
-  if(op==='+'){
-    a=rndInt(rng,0,max); b=rndInt(rng,0,max); answer=a+b;
-    if(opt.noNegative && answer<0) return makeProblem(rng,ops,max,opt);
-    if(answer>max && max<=20){ b = Math.max(0, max - a); answer=a+b; }
-    question=`${a} + ${b} =`;
-  }else if(op==='-'){
-    a=rndInt(rng,0,max); b=rndInt(rng,0,max);
-    if(opt.noNegative && b>a){ [a,b]=[b,a]; }
-    answer=a-b; question=`${a} − ${b} =`;
-  }else if(op==='*'){
-    const cap = Math.min(max, 12);
-    a=rndInt(rng,0,cap); b=rndInt(rng,0,cap); answer=a*b;
-    question=`${a} × ${b} =`;
-  }else{ // '/'
-    const cap = Math.min(max, 12);
-    b = rndInt(rng,1,cap);
-    answer = rndInt(rng,0,cap);
-    a = b * answer;
-    question=`${a} ÷ ${b} =`;
+/* ---------- DOM ---------- */
+const form = document.getElementById('controls');
+const startBtn = document.getElementById('start');
+const checkBtn = document.getElementById('checkAll');
+const timerEl = document.getElementById('timer');
+const scoreEl = document.getElementById('score');
+const totalEl = document.getElementById('total');
+const resultEl = document.getElementById('result');
+const bestEl = document.getElementById('best');
+const grid = document.getElementById('grid');
+const quiz = document.getElementById('quiz');
+const variantEl = document.getElementById('variant');
+
+function getVal(id){ return document.getElementById(id).value; }
+function getNum(id){ return parseInt(getVal(id),10); }
+function isChecked(id){ return document.getElementById(id).checked; }
+
+function getOptions(){
+  const ops = [...form.querySelectorAll('input[name="ops"]:checked')].map(x=>x.value);
+  return {
+    ops: ops.length? ops : ['+'],
+    max: Math.max(5, getNum('max')),
+    count: Math.max(5, Math.min(200, getNum('count'))),
+    noNegative: isChecked('noNegative'),
+    intDiv: isChecked('intDiv'),
+    checkMode: getVal('checkMode'),
+    timerMode: getVal('timerMode'),
+    timerSeconds: Math.max(10, getNum('timerSeconds')),
+    seed: isChecked('seeded') ? (getNum('seed')|0) : Math.floor(Math.random()*1e9)
   }
-  return {q:question, a:answer};
 }
-function generateSet(opts){
-  const {ops, max, count, noNegative, intDiv, seed} = opts;
-  const rng = mulberry32(seed ?? Math.floor(Math.random()*1e9));
-  const seen = new Set();
-  const list = [];
-  while(list.length < count){
-    const p = makeProblem(rng, ops, max, {noNegative,intDiv});
-    const key = p.q + '|' + p.a;
+document.getElementById('preset').addEventListener('change', e=>{
+  document.getElementById('max').value = e.target.value;
+});
+
+function keyForBest(o){
+  return `quiz_best__ops:${o.ops.sort().join('')}_max:${o.max}_count:${o.count}`;
+}
+function readBest(o){
+  try{ return JSON.parse(localStorage.getItem(keyForBest(o))||'null'); }catch{ return null; }
+}
+function writeBest(o, rec){
+  try{ localStorage.setItem(keyForBest(o), JSON.stringify(rec)); }catch{}
+}
+function showBest(o){
+  const b = readBest(o);
+  bestEl.textContent = b ? `Лучший: ${b.score}/${b.total} за ${b.time.toFixed(1)}s` : 'Лучший: —';
+}
+
+/* ---------- Генератор задач ---------- */
+function makeProblem(rng, ops, max, opt){
+  const op = ops[rInt(rng,0,ops.length-1)];
+  let a,b,q,ans;
+  if(op==='+'){
+    a=rInt(rng,0,max); b=rInt(rng,0,max); ans=a+b; q=`${a} + ${b} =`;
+  }else if(op==='-'){
+    a=rInt(rng,0,max); b=rInt(rng,0,max);
+    if(opt.noNegative && b>a){ [a,b]=[b,a]; }
+    ans=a-b; q=`${a} − ${b} =`;
+  }else if(op==='*'){
+    const cap=Math.min(max,12);
+    a=rInt(rng,0,cap); b=rInt(rng,0,cap); ans=a*b; q=`${a} × ${b} =`;
+  }else{ // '/'
+    const cap=Math.min(max,12);
+    b=rInt(rng,1,cap);
+    ans=rInt(rng,0,cap);
+    a=b*ans; q=`${a} ÷ ${b} =`;
+  }
+  return {q, ans};
+}
+function makeSet(opt){
+  const rng = mulberry32(opt.seed);
+  const seen = new Set(), list=[];
+  while(list.length<opt.count){
+    const p=makeProblem(rng,opt.ops,opt.max,opt);
+    const key=p.q+'|'+p.ans;
     if(seen.has(key)) continue;
-    seen.add(key);
-    list.push(p);
+    seen.add(key); list.push(p);
   }
   return list;
 }
 
-/* ---------- Рендер печатного листа ---------- */
-function renderProblems(list, showKey=false){
-  const wrap = document.getElementById('problemsWrap');
-  wrap.classList.toggle('key', showKey);
-  wrap.innerHTML = list.map((p,i)=>{
-    return `<div class="item"><span class="q">${i+1}. ${p.q}</span> <span class="dots">${showKey? p.a : '&nbsp;'}</span></div>`;
-  }).join('');
-}
+/* ---------- Состояние и таймер ---------- */
+let current = {opts:null, list:[], start:0, tickId:0, time:0, running:false};
+function setScore(n){ scoreEl.textContent=n; }
+function setTotal(n){ totalEl.textContent=n; }
 
-/* ---------- Контролы (общие) ---------- */
-const form   = document.getElementById('controls');
-const dateEl = document.getElementById('date');
-const varEl  = document.getElementById('variant');
-dateEl.textContent = new Date().toLocaleDateString();
-
-function getOptions(){
-  const opVals = [...form.querySelectorAll('input[name="ops"]:checked')].map(i=>i.value);
-  const preset = document.getElementById('preset').value;
-  const maxEl  = document.getElementById('max');
-  if(!maxEl.dataset.touched){ maxEl.value = preset; }
-  const max = Math.max(5, parseInt(maxEl.value||preset,10));
-  const count = Math.max(5, Math.min(200, parseInt(document.getElementById('count').value||20,10)));
-  return {
-    ops: opVals.length? opVals : ['+'],
-    max, count,
-    noNegative: document.getElementById('noNegative').checked,
-    intDiv: document.getElementById('intDiv').checked,
-    seeded: document.getElementById('seeded').checked,
-    seed: document.getElementById('seed').value|0
-  };
-}
-document.getElementById('preset').addEventListener('change', e=>{
-  const maxEl=document.getElementById('max');
-  maxEl.value = e.target.value;
-});
-document.getElementById('max').addEventListener('input', e=>{
-  e.currentTarget.dataset.touched = '1';
-});
-
-/* ---------- Таймер (фикс: off — строго «тишина») ---------- */
-const timerText   = document.getElementById('timerText');    // в панели
-const timerText2  = document.getElementById('timerText2');   // в интерактиве
-const modeSel     = document.getElementById('timerMode');
-const secInput    = document.getElementById('timerSec');
-
-let tMode='off', tStart=0, tLeftMs=0, tRaf=0, tRunning=false;
-let onTimeOver=null;
-
-const fmt = ms => (ms/1000).toFixed(1)+'s';
-function paintFrame(){
-  if(!tRunning) return;
-  const elapsed = Date.now()-tStart;
-  if(tMode==='down'){
-    const left = Math.max(0, tLeftMs - elapsed);
-    timerText && (timerText.textContent = fmt(left));
-    timerText2 && (timerText2.textContent = fmt(left));
-    if(left<=0){ stopTimer(); onTimeOver && onTimeOver(); return; }
-  }else if(tMode==='up'){
-    timerText && (timerText.textContent = fmt(elapsed));
-    timerText2 && (timerText2.textContent = fmt(elapsed));
-  }
-  tRaf = requestAnimationFrame(paintFrame);
-}
-function setupTimerFromUI(){
-  tMode = (modeSel?.value || 'off');
-  const sec = Math.max(1, Number(secInput?.value || 20));
-  tLeftMs = sec*1000;
-}
+function formatSec(s){ return s.toFixed(1)+'s'; }
 function startTimer(){
-  if(tMode==='off'){ stopTimer(); setTimerUI('—'); return; }
-  cancelAnimationFrame(tRaf);
-  tStart=Date.now(); tRunning=true; paintFrame();
+  current.start = performance.now();
+  current.running=true;
+  const mode=current.opts.timerMode, limit=current.opts.timerSeconds;
+  function frame(t){
+    if(!current.running) return;
+    const ms = (t-current.start);
+    if(mode==='up'){
+      current.time = ms/1000;
+      timerEl.textContent = 'Время: '+formatSec(current.time);
+      current.tickId=requestAnimationFrame(frame);
+    }else if(mode==='down'){
+      const left = Math.max(0, limit - ms/1000);
+      current.time = limit - left;
+      timerEl.textContent = 'Осталось: '+formatSec(left);
+      if(left<=0){ finish(true); } else { current.tickId=requestAnimationFrame(frame); }
+    }else{
+      current.time = ms/1000;
+      timerEl.textContent = 'Время: '+formatSec(current.time);
+      current.tickId=requestAnimationFrame(frame);
+    }
+  }
+  cancelAnimationFrame(current.tickId);
+  current.tickId=requestAnimationFrame(frame);
 }
-function stopTimer(){ cancelAnimationFrame(tRaf); tRunning=false; }
-function setTimerUI(s){ timerText && (timerText.textContent=s); timerText2 && (timerText2.textContent=s); }
+function stopTimer(){ current.running=false; cancelAnimationFrame(current.tickId); }
 
-modeSel?.addEventListener('change',()=>{
-  setupTimerFromUI();
-  if(tMode==='off'){ stopTimer(); setTimerUI('—'); }
-  else setTimerUI(tMode==='down'? fmt(tLeftMs):'0.0s'); // не автозапуск!
-});
-secInput?.addEventListener('input',()=>{
-  setupTimerFromUI();
-  if(tRunning && tMode==='down') startTimer(); // применить новое значение на лету
-});
-function timerInit(opts={}){
-  onTimeOver = opts.onTimeOver || null;
-  setupTimerFromUI();
-  setTimerUI(tMode==='down'? fmt(tLeftMs) : (tMode==='up' ? '0.0s' : '—'));
-}
-function timerStart(){ setupTimerFromUI(); startTimer(); }
-function timerStop(){ stopTimer(); }
-
-/* ---------- Состояние текущей генерации ---------- */
-let current = { list:[], seed:0 };
-
-function regenerate(showKey=false){
-  const opts = getOptions();
-  const seedUsed = opts.seeded? (opts.seed|0) : Math.floor(Math.random()*1e9);
-  const list = generateSet({...opts, seed:seedUsed});
-  current = {list, seed:seedUsed};
-  varEl.textContent = seedUsed;
-  renderProblems(list, showKey);
-}
-
-/* ---------- Интерактив ---------- */
-function buildQuiz(list){
-  const host = document.getElementById('quizWrap');
-  host.innerHTML = list.map((p,i)=>`
-    <label class="q">${i+1}. ${p.q}</label>
-    <input class="ans" inputmode="numeric" autocomplete="off" data-i="${i}" />
+/* ---------- Рендер квиза ---------- */
+function render(list, opt){
+  grid.innerHTML = list.map((p,i)=>`
+    <label class="item">
+      <span class="q">${i+1}. ${p.q}</span>
+      <span class="ans">
+        <input type="number" inputmode="numeric" data-i="${i}" aria-label="Ответ на задачу ${i+1}">
+        <span class="mark" id="mk${i}" aria-hidden="true"></span>
+      </span>
+    </label>
   `).join('');
-  document.getElementById('scoreLine').textContent = '';
-}
-function checkQuiz(){
-  const inputs = [...document.querySelectorAll('.ans')];
-  let ok=0;
-  inputs.forEach(inp=>{
-    const i = +inp.dataset.i;
-    const user = inp.value.trim();
-    const good = (user !== '' && +user === +current.list[i].a);
-    inp.classList.toggle('ok', good);
-    inp.classList.toggle('bad', !good);
-    if(good) ok++;
+  setTotal(list.length);
+  setScore(0);
+  resultEl.classList.add('hide');
+  quiz.classList.remove('hide');
+
+  // поведение ввода
+  grid.querySelectorAll('input').forEach((inp, idx, arr)=>{
+    inp.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); (arr[idx+1]||arr[0]).focus(); }
+    });
+    if(opt.checkMode==='instant'){
+      inp.addEventListener('input', ()=>checkOne(idx));
+    }
   });
-  document.getElementById('scoreLine').textContent = `Результат: ${ok} / ${current.list.length}`;
+  grid.querySelector('input')?.focus();
 }
 
-/* ---------- Кнопки ---------- */
-document.getElementById('generate').addEventListener('click', ()=>regenerate(false));
-document.getElementById('printSheet').addEventListener('click', ()=>{
-  renderProblems(current.list, false);
-  window.print();
-});
-document.getElementById('printKey').addEventListener('click', ()=>{
-  renderProblems(current.list, true);
-  window.print();
-});
+/* ---------- Проверка ---------- */
+function checkOne(i){
+  const val = grid.querySelector(`input[data-i="${i}"]`).value;
+  const mark = document.getElementById('mk'+i);
+  const ok = (val!=='' && Number(val)===current.list[i].ans);
+  mark.className = 'mark ' + (ok? 'ok':'bad');
+  recount();
+}
+function recount(){
+  const n = current.list.length;
+  let good=0;
+  for(let i=0;i<n;i++){
+    const inp=grid.querySelector(`input[data-i="${i}"]`);
+    if(inp && Number(inp.value)===current.list[i].ans) good++;
+  }
+  setScore(good);
+}
+function checkAll(){
+  const n=current.list.length;
+  for(let i=0;i<n;i++){ checkOne(i); }
+}
 
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  // готовим интерактив
-  timerInit({ onTimeOver: () => document.getElementById('checkBtn').click() });
-  if(current.list.length===0) regenerate(false);
-  buildQuiz(current.list);
-  document.getElementById('play').style.display = '';
-  // стартуем таймер только если не off
-  if((document.getElementById('timerMode')?.value || 'off') !== 'off') timerStart();
-});
+/* ---------- Старт/Финиш ---------- */
+function lockControls(lock){
+  [...form.elements].forEach(el=>{
+    if(el.id==='checkAll') return;
+    el.disabled=lock && el.id!=='checkAll';
+  });
+}
+function startQuiz(){
+  const opts=getOptions();
+  current.opts=opts;
+  current.list=makeSet(opts);
+  variantEl.textContent = opts.seed;
+  showBest(opts);
 
-document.getElementById('checkBtn').addEventListener('click', ()=>{
-  timerStop();
-  checkQuiz();
-});
+  render(current.list, opts);
+  lockControls(true);
+  startTimer();
+}
+function finish(auto=false){
+  stopTimer();
+  checkAll();
+  lockControls(false);
+  const score=parseInt(scoreEl.textContent,10), total=parseInt(totalEl.textContent,10);
+  resultEl.classList.remove('hide');
+  resultEl.textContent = `${auto?'Время вышло — ':''}Результат: ${score}/${total} за ${current.time.toFixed(1)}s`;
 
-/* ---------- Авто-генерация печатного листа при открытии ---------- */
-regenerate(false);
-timerInit();
+  // лучший результат
+  const best=readBest(current.opts);
+  if(!best || score>best.score || (score===best.score && current.time<best.time)){
+    writeBest(current.opts, {score, total, time:current.time});
+    showBest(current.opts);
+  }
+}
+
+/* ---------- События ---------- */
+startBtn.addEventListener('click', ()=>{
+  finishCleanup(); // если что-то было
+  startQuiz();
+});
+checkBtn.addEventListener('click', ()=>finish(false));
+
+function finishCleanup(){ stopTimer(); }
+
+/* авто-синхронизация max с пресетом один раз */
+document.getElementById('preset').dispatchEvent(new Event('change'));
+
+/* старт без авто — пусть кликают Старт */
 </script>
 </body>
 </html>
