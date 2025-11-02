@@ -2,25 +2,26 @@
 const API_BASE = 'https://kids-games-backend.onrender.com';
 
 // === DOM ===
-const startBtn    = document.getElementById('startBtn');
-const startScreen = document.getElementById('startScreen');
-const gameArea    = document.getElementById('gameArea');
+const startBtn     = document.getElementById('startBtn');
+const startScreen  = document.getElementById('startScreen');
+const gameArea     = document.getElementById('gameArea');
 
-const playfield   = document.getElementById('playfield');
-const bug         = document.getElementById('bug');
+const playfield    = document.getElementById('playfield');
+const bug          = document.getElementById('bug');
 
-const timeEl      = document.querySelector('[data-time]');
-const scoreEl     = document.querySelector('[data-score]');
+const timeEl       = document.querySelector('[data-time]');
+const scoreEl      = document.querySelector('[data-score]');
 
-const postGame    = document.getElementById('postGame');
-const finalScore  = document.getElementById('finalScore');
+const postGame     = document.getElementById('postGame');
+const finalScore   = document.getElementById('finalScore');
 
-const form        = document.getElementById('scoreForm');
-const nameInput   = document.getElementById('playerName');
-const submitBtn   = document.getElementById('submitBtn');
-const statusEl    = document.getElementById('scoreStatus');
-const leaderboard = document.getElementById('leaderboard');
-const restartBtn  = document.getElementById('restartBtn');
+const form         = document.getElementById('scoreForm');
+const nameInput    = document.getElementById('playerName');
+const submitBtn    = document.getElementById('submitBtn');
+const statusEl     = document.getElementById('scoreStatus');
+const leaderboard  = document.getElementById('leaderboard');
+const restartBtn   = document.getElementById('restartBtn');
+const soundToggle  = document.getElementById('soundToggle');
 
 // === Audio (пути относительно корня GitHub Pages) ===
 const sounds = {
@@ -34,6 +35,8 @@ sounds.click.volume = 0.75;      // 0.0–1.0
 sounds.click.playbackRate = 1; // 0.5–4.0
 
 let soundEnabled = false;
+let soundWasToggled = false;
+let soundsPrimed = false;
 
 // === Game vars ===
 const ROUND_MS   = 20000;
@@ -86,6 +89,45 @@ function updateScore(){
   scoreEl.textContent = 'Score: ' + state.score;
 }
 
+function applySoundState(){
+  if (!soundToggle) return;
+  soundToggle.setAttribute('aria-pressed', soundEnabled ? 'true' : 'false');
+  soundToggle.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+}
+
+function setSoundEnabled(next, userInitiated = false){
+  soundEnabled = next;
+  if (userInitiated) soundWasToggled = true;
+  applySoundState();
+  if (!soundEnabled){
+    try { sounds.bg.pause(); } catch {}
+    try { sounds.last5.pause(); sounds.last5.currentTime = 0; } catch {}
+    try { sounds.click.pause(); sounds.click.currentTime = 0; } catch {}
+  } else if (state.running){
+    try { sounds.bg.currentTime = 0; void sounds.bg.play(); } catch {}
+  }
+}
+
+function primeSounds(){
+  if (soundsPrimed) return;
+  soundsPrimed = true;
+  Object.values(sounds).forEach(audio=>{
+    const originalVolume = audio.volume;
+    audio.volume = 0;
+    try{
+      const playAttempt = audio.play();
+      if (playAttempt && typeof playAttempt.catch === 'function'){
+        playAttempt.catch(()=>{});
+      }
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = originalVolume;
+    }catch{
+      audio.volume = originalVolume;
+    }
+  });
+}
+
 function placeBugRandom(){
   const rect = playfield.getBoundingClientRect();
   const maxX = rect.width  - BUG_SIZE;
@@ -118,11 +160,6 @@ function startGame(){
   if (startScreen) startScreen.hidden = true;
   if (gameArea) gameArea.hidden = false;
 
-  // audio
-  if (soundEnabled){
-    try { sounds.bg.currentTime = 0; sounds.bg.play(); } catch {}
-  }
-
   // state
   postGame.hidden = true;
   statusEl.textContent = '';
@@ -133,6 +170,9 @@ function startGame(){
   state.start = Date.now();
   state.warnedLast5 = false;
   state.muteUntil = 0;
+
+  // sync audio preference with current run
+  setSoundEnabled(soundEnabled);
 
   updateScore();
   updateTimer(0);
@@ -169,7 +209,8 @@ function endGame(){
 // === Events ===
 // Старт (разрешает звук пользовательским кликом и запускает игру)
 startBtn?.addEventListener('click', () => {
-  soundEnabled = true;
+  primeSounds();
+  if (!soundWasToggled && !soundEnabled) setSoundEnabled(true);
   startGame();
 });
 
@@ -206,6 +247,13 @@ bug.addEventListener('click', () => {
 
 // Рестарт
 restartBtn?.addEventListener('click', startGame);
+
+soundToggle?.addEventListener('click', () => {
+  primeSounds();
+  setSoundEnabled(!soundEnabled, true);
+});
+
+applySoundState();
 
 // === Backend (scores) ===
 form.addEventListener('submit', async (ev)=>{
